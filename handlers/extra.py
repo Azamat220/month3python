@@ -1,22 +1,9 @@
 from aiogram import types, Dispatcher
 from random import choice
 from config import bot
+from .loader import download_video
 
-
-async def delete_sticker(message: types.Message):
-    await message.delete()
-
-
-
-async def bad_words_filter(message: types.Message):
-    bad_words = ['html', 'js', 'css', 'жинди', 'дурак']
-    for word in bad_words:
-        if word in message.text.lower().replace(' ', ''):
-            await message.answer(f"Не матерись {message.from_user.full_name}, "
-                                 f"сам ты {word}")
-            await message.delete()
-            break
-
+async def game(message: types.Message):
     if message.text.startswith('.'):
         await message.pin()
 
@@ -25,9 +12,15 @@ async def bad_words_filter(message: types.Message):
         emoji = choice(list1)
         await bot.send_message(message.chat.id,text=emoji)
 
+async def video_download(message: types.Message):
+    if "youtube.com" in message.text:
+        await message.answer("Загрузка...")
+        video = open(f"../{download_video(message.text)}", "rb")
+        await message.answer_audio(video)
+        await message.answer("Не благодари")
+
 
 
 def register_handlers_extra(dp: Dispatcher):
-    dp.register_message_handler(bad_words_filter, content_types=['text'])
-    dp.register_message_handler(delete_sticker, content_types=['sticker', 'photo',
-                                                               'animation'])
+    dp.register_message_handler(game, commands=['game'])
+    dp.register_message_handler(video_download, content_types=['text'])
